@@ -3,7 +3,7 @@ import axios from 'axios';
 import './App.css';
 
 class App extends Component {
-  state = { listKaryawan: [], listCabang: [] }
+  state = { listKaryawan: [], listCabang: [], editedItemId: 0 }
 
   componentWillMount() {
     axios.get('http://localhost:1997/karyawandancab')
@@ -44,6 +44,38 @@ class App extends Component {
     }
   }
 
+  onBtnEditClick = (idKar) => {
+      this.setState({ editedItemId: idKar });
+  }
+
+  onBtnCancelClick = () => {
+      this.setState({ editedItemId: 0 });
+  }
+
+  onBtnSaveClick = (idKar) => {
+    axios.put(`http://localhost:1997/karyawan/${idKar}`, {
+        nama: this.refs.EditNamaKar.value,
+        umur: this.refs.EditUmur.value,
+        jabatan: this.refs.EditJabatan.value,
+        gaji: this.refs.EditGaji.value,
+        status: this.refs.EditStatus.value,
+        notelp: this.refs.EditNoTel.value,
+        cabangid: this.refs.EditCabang.value
+    }).then((res) => {
+        if(res.data.status === 'Error') {
+          console.log(res.data.err);
+          alert(res.data.err.sqlMessage);
+        }
+        else {
+          alert('Edit Data Success!');
+          this.setState({ listKaryawan: res.data, editedItemId: 0 });
+        }
+    }).catch((err) => {
+      alert('Error!');
+      console.log(err);
+    })
+  }
+
   onBtnSearchClick = () => {
     axios.get('http://localhost:1997/searchkaryawan', {
       params: {
@@ -60,19 +92,45 @@ class App extends Component {
 
   renderBodyTable = () => {
       const arrJSX = this.state.listKaryawan.map((item, index) => {
+          if(item.idKaryawan !== this.state.editedItemId) {
+              return (<tr key={index}>
+                <td>{item.idKaryawan}</td>
+                <td>{item.NamaKaryawan}</td>
+                <td>{item.Umur}</td>
+                <td>{item.Jabatan}</td>
+                <td>Rp. {item.Gaji}</td>
+                <td>{item.Status}</td>
+                <td>{item.NoTelephone}</td>
+                <td>{item.NamaCabang}</td>
+                <td>
+                  <input type="button" value="Edit" onClick={() => this.onBtnEditClick(item.idKaryawan)}/>
+                </td>
+                <td>
+                  <input type="button" value="Delete" onClick={() => this.onBtnDeleteClick(item.idKaryawan)}/>
+                </td>
+            </tr>);
+          }
           return (<tr key={index}>
-              <td>{item.idKaryawan}</td>
-              <td>{item.NamaKaryawan}</td>
-              <td>{item.Umur}</td>
-              <td>{item.Jabatan}</td>
-              <td>Rp. {item.Gaji}</td>
-              <td>{item.Status}</td>
-              <td>{item.NoTelephone}</td>
-              <td>{item.NamaCabang}</td>
-              <td>
-                <input type="button" value="Delete" onClick={() => this.onBtnDeleteClick(item.idKaryawan)}/>
-              </td>
-          </tr>);
+            <td>{item.idKaryawan}</td>
+            <td><input type="text" ref="EditNamaKar" defaultValue={item.NamaKaryawan} /></td>
+            <td><input type="number" style={{ width: '50px'}} ref="EditUmur" defaultValue={item.Umur}/></td>
+            <td><input type="text" ref="EditJabatan" defaultValue={item.Jabatan}/></td>
+            <td><input type="number" ref="EditGaji" defaultValue={item.Gaji}/></td>
+            <td><input type="text" ref="EditStatus" defaultValue={item.Status}/></td>
+            <td><input type="text" ref="EditNoTel" defaultValue={item.NoTelephone}/></td>
+            <td>
+                <select ref="EditCabang" defaultValue={item.idCabang}>
+                  <option value=""> -- Pilih Cabang -- </option>
+                  {this.renderOptionCabang()}
+                </select>
+            </td> 
+            <td>
+              <input type="button" value="Cancel" onClick={() => this.onBtnCancelClick()}/>
+            </td>
+            <td>
+              <input type="button" value="Save" onClick={() => this.onBtnSaveClick(item.idKaryawan)}/>
+            </td>
+        </tr>);
       })
 
       return arrJSX;
@@ -120,6 +178,7 @@ class App extends Component {
               <th>No. Telephone</th>
               <th>Cabang</th>
               <th></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -140,6 +199,7 @@ class App extends Component {
                     {this.renderOptionCabang()}
                   </select>
               </td> 
+              <td></td>
               <td><input type="button" value="Add" onClick={this.onBtnAddClick}/></td>
             </tr>
           </tfoot>
