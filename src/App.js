@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import './App.css';
+import { API_URL } from './supports/api-url';
 
 class App extends Component {
   state = { listKaryawan: [], listCabang: [], editedItemId: 0 }
 
   componentWillMount() {
-    axios.get('http://localhost:1997/karyawandancab')
+    axios.get(API_URL + '/karyawandancab')
     .then((res) => {
         console.log(res);
         this.setState({ listKaryawan: res.data.listKaryawan, listCabang: res.data.listCabang });
@@ -14,7 +15,7 @@ class App extends Component {
   }
 
   onBtnAddClick = () => {
-    axios.post('http://localhost:1997/karyawan', {
+    axios.post(API_URL + '/karyawan', {
         nama: this.refs.NamaKar.value,
         umur: this.refs.Umur.value,
         jabatan: this.refs.Jabatan.value,
@@ -33,7 +34,7 @@ class App extends Component {
 
   onBtnDeleteClick = (idKar) => {
     if(window.confirm('Are you sure?')) {
-      axios.delete('http://localhost:1997/karyawan/' + idKar)
+      axios.delete(API_URL + '/karyawan/' + idKar)
       .then((res) => {
           alert('Delete Data Success!');
           this.setState({ listKaryawan: res.data });
@@ -53,7 +54,7 @@ class App extends Component {
   }
 
   onBtnSaveClick = (idKar) => {
-    axios.put(`http://localhost:1997/karyawan/${idKar}`, {
+    axios.put(API_URL + `/karyawan/${idKar}`, {
         nama: this.refs.EditNamaKar.value,
         umur: this.refs.EditUmur.value,
         jabatan: this.refs.EditJabatan.value,
@@ -77,7 +78,7 @@ class App extends Component {
   }
 
   onBtnSearchClick = () => {
-    axios.get('http://localhost:1997/searchkaryawan', {
+    axios.get(API_URL + '/searchkaryawan', {
       params: {
         namakaryawan: this.refs.NamaSearch.value,
         namacabang: this.refs.CabangSearch.value
